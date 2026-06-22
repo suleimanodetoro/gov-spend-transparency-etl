@@ -1,0 +1,28 @@
+{
+  "schema_version": "2026-05",
+  "sources": {
+    "cabinet_office": {
+      "transaction_id": "transaction_id",
+      "supplier_name": "supplier_name",
+      "payment_date": "payment_date",
+      "amount": "amount",
+      "expense_area": "expense_category",
+      "VAT": "vat_amount"
+    },
+    "mod": {
+      "Ref": "transaction_id",
+      "Vendor": "supplier_name",
+      "Payment Date": "payment_date",
+      "Gross (\u00A3)": "amount",
+      "Cost Centre": "expense_category"
+    },
+    "dhsc": {
+      "Invoice ID": "transaction_id",
+      "Supplier": "supplier_name",
+      "Date Paid": "payment_date",
+      "Amount Paid": "amount",
+      "Category": "expense_category",
+      "VAT": "vat_amount"
+    }
+  }
+}

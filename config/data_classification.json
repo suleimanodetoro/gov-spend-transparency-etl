@@ -1,0 +1,25 @@
+{
+  "note": "Classification driving the open analytics layer versus the restricted assurance layer. In production these levels become AWS Lake Formation LF-Tags governing column-level access (tag-based ABAC over Data Catalog columns); row and cell restrictions are enforced separately by Lake Formation data filters, not by LF-Tags. Public and internal are visible to analysts, restricted only to the assurance role.",
+  "levels": ["public", "internal", "restricted"],
+  "columns": {
+    "transaction_id": "internal",
+    "source_department": "public",
+    "department_group": "public",
+    "payment_month": "public",
+    "payment_date": "public",
+    "supplier_name": "public",
+    "amount_gbp": "public",
+    "vat_amount_gbp": "public",
+    "expense_category": "public",
+    "supplier_category": "public",
+    "cost_centre": "internal",
+    "processing_status": "internal",
+    "missing_approval": "internal",
+    "needs_review": "internal",
+    "approver": "restricted",
+    "budget_owner": "restricted",
+    "internal_notes": "restricted",
+    "risk_rating": "restricted",
+    "due_diligence_notes": "restricted"
+  }
+}
