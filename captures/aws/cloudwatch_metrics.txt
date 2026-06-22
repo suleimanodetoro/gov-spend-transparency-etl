@@ -1,0 +1,7 @@
+# CloudWatch custom metrics (GovSpendETL namespace)
+---------------------
+|    ListMetrics    |
++-------------------+
+|  ValidRecords     |
+|  RejectedRecords  |
++-------------------+

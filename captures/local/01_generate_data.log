@@ -1,0 +1,11 @@
+wrote cabinet_office_spend_2026_04.csv           251 rows
+wrote mod_spend_2026_04.csv                      220 rows
+wrote dhsc_spend_2026_04.csv                     240 rows
+wrote cabinet_office_spend_2026_05.csv           261 rows
+wrote dhsc_spend_2026_05.csv                     250 rows
+wrote cabinet_office_spend_2026_05_schemadrift.csv 121 rows
+wrote mod_spend_2026_05_malformed.csv            213 rows
+wrote reference/approvals_ledger.csv             1321 rows
+wrote reference/supplier_reference.csv           9 rows
+
+7 spend files + 2 reference files

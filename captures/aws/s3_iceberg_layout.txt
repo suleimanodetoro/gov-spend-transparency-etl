@@ -1,0 +1,12 @@
+# S3 Iceberg layout for silver_clean_spend (metadata/ + data/)
+data/source_department=cabinet_office/payment_month=2026-04/00000-185-f66b6fe5-e5b7-4689-a2b5-4d861d9b9712-0-00002.parquet
+data/source_department=cabinet_office/payment_month=2026-05/00000-185-f66b6fe5-e5b7-4689-a2b5-4d861d9b9712-0-00001.parquet
+data/source_department=dhsc/payment_month=2026-04/00000-185-f66b6fe5-e5b7-4689-a2b5-4d861d9b9712-0-00006.parquet
+data/source_department=dhsc/payment_month=2026-05/00000-185-f66b6fe5-e5b7-4689-a2b5-4d861d9b9712-0-00005.parquet
+data/source_department=mod/payment_month=2026-04/00000-185-f66b6fe5-e5b7-4689-a2b5-4d861d9b9712-0-00004.parquet
+data/source_department=mod/payment_month=2026-05/00000-185-f66b6fe5-e5b7-4689-a2b5-4d861d9b9712-0-00003.parquet
+metadata/00000-96bd537f-10f3-47a8-a37b-9beaacc596cf.metadata.json
+metadata/00001-5dccea73-322c-4c4c-ba3e-7cd7faae266c.metadata.json
+metadata/01d8c902-3080-4173-84a8-5ec089bd7f0a-m0.avro
+metadata/snap-1634589176410929694-1-bee89c08-8f49-4c51-9751-311c3ca4b17a.avro
+metadata/snap-6654061681475857932-1-01d8c902-3080-4173-84a8-5ec089bd7f0a.avro

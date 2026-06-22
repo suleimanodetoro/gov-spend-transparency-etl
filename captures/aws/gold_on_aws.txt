@@ -1,0 +1,11 @@
+gold_department_metrics queried on AWS via Athena (as assurance-role) — IDENTICAL to the local Parquet run.
+
+source_department  payment_month  total_spend     txns  suppliers  credits
+cabinet_office     2026-04        138,839,095.90   330   9          29
+cabinet_office     2026-05        129,924,000.39   300   9          18
+dhsc               2026-04         85,047,340.85   219   9          14
+dhsc               2026-05        121,128,806.34   271   9          17
+mod                2026-04         95,398,944.26   229   9          17
+mod                2026-05         82,139,309.48   201   9          17
+
+Same shared transforms.py/quality.py; only the table format (Parquet -> Iceberg) and catalog changed.

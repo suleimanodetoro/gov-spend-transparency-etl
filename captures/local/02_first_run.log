@@ -1,0 +1,42 @@
+WARNING: Using incubator modules: jdk.incubator.vector
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+26/06/21 19:30:33 WARN Utils: Your hostname, Suleimans-MacBook-Pro.local, resolves to a loopback address: 127.0.0.1; using 192.168.0.158 instead (on interface en0)
+26/06/21 19:30:33 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
+Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+26/06/21 19:30:34 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+[Stage 2:>                                                          (0 + 1) / 1]                                                                                [Stage 98:=================================>                        (4 + 2) / 7]                                                                                [ok] cabinet_office_spend_2026_04.csv           valid= 250  quarantined=0
+[ok] cabinet_office_spend_2026_05.csv           valid= 260  quarantined=0
+[schema-evolution] cabinet_office: unmapped -> raw_extras: ['Programme Code']
+[ok] cabinet_office_spend_2026_05_schemadrift.csv valid= 120  quarantined=0
+[ok] dhsc_spend_2026_04.csv                     valid= 240  quarantined=0
+[ok] dhsc_spend_2026_05.csv                     valid= 250  quarantined=0
+[ok] mod_spend_2026_04.csv                      valid= 220  quarantined=0
+[ok] mod_spend_2026_05_malformed.csv            valid= 210  quarantined=3
+
+=== GOLD: department monthly metrics ===
++-----------------+----------------+-------------+------------+-----------------+--------------+------------+----------+
+|source_department|department_group|payment_month|total_spend |transaction_count|supplier_count|credit_count|avg_amount|
++-----------------+----------------+-------------+------------+-----------------+--------------+------------+----------+
+|cabinet_office   |Cabinet Office  |2026-04      |138839095.90|330              |9             |29          |420724.53 |
+|cabinet_office   |Cabinet Office  |2026-05      |129924000.39|300              |9             |18          |433080.00 |
+|dhsc             |Health          |2026-04      |85047340.85 |219              |9             |14          |388344.02 |
+|dhsc             |Health          |2026-05      |121128806.34|271              |9             |17          |446969.77 |
+|mod              |Defence         |2026-04      |95398944.26 |229              |9             |17          |416589.28 |
+|mod              |Defence         |2026-05      |82139309.48 |201              |9             |17          |408653.28 |
++-----------------+----------------+-------------+------------+-----------------+--------------+------------+----------+
+
+=== Quarantine sample ===
++-------------------------------------------------------------------------------------------------------------------------+--------------+----------+-----------+------------------------------------+
+|source_file                                                                                                              |transaction_id|raw_amount|raw_date   |rejection_reason                    |
++-------------------------------------------------------------------------------------------------------------------------+--------------+----------+-----------+------------------------------------+
+|file:///Users/suleimanodetoro/Desktop/BecomingHirable/gov-spend-transparency-etl/data/raw/mod_spend_2026_05_malformed.csv|MOD-bad-1     |INVALID   |31/02/2026 |invalid_payment_date; invalid_amount|
+|file:///Users/suleimanodetoro/Desktop/BecomingHirable/gov-spend-transparency-etl/data/raw/mod_spend_2026_05_malformed.csv|NULL          |1,000.00  |16-Apr-2026|missing_transaction_id              |
+|file:///Users/suleimanodetoro/Desktop/BecomingHirable/gov-spend-transparency-etl/data/raw/mod_spend_2026_05_malformed.csv|MOD-bad-3     |55,000.00 |14-Apr-2026|missing_supplier                    |
++-------------------------------------------------------------------------------------------------------------------------+--------------+----------+-----------+------------------------------------+
+
+=== ABAC: open analytics layer columns (restricted removed) ===
+['amount_gbp', 'cost_centre', 'department_group', 'expense_category', 'ingested_at', 'missing_approval', 'needs_review', 'payment_date', 'payment_month', 'processing_status', 'raw_extras', 'record_hash', 'schema_version', 'source_department', 'source_file', 'supplier_category', 'supplier_name', 'transaction_id', 'vat_amount_gbp']
+=== ABAC: restricted columns live only in the assurance layer ===
+['approver', 'budget_owner', 'due_diligence_notes', 'internal_notes', 'risk_rating']

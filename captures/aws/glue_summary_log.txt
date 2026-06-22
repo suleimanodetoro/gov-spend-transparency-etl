@@ -1,0 +1,9 @@
+# Glue job summary log line (valid/rejected)
+[ok] spend/cabinet_office_spend_2026_04.csv             valid=  250  quarantined=0
+	[ok] spend/cabinet_office_spend_2026_05.csv             valid=  260  quarantined=0
+	[ok] spend/cabinet_office_spend_2026_05_schemadrift.csv valid=  120  quarantined=0
+	[ok] spend/dhsc_spend_2026_04.csv                       valid=  240  quarantined=0
+	[ok] spend/dhsc_spend_2026_05.csv                       valid=  250  quarantined=0
+	[ok] spend/mod_spend_2026_04.csv                        valid=  220  quarantined=0
+	[ok] spend/mod_spend_2026_05_malformed.csv              valid=  210  quarantined=3
+	[summary] valid=1550 rejected=3 tables=[silver_clean_spend, curated_open_analytics, gold_department_metrics, rejected_records]

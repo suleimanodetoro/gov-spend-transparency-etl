@@ -1,0 +1,21 @@
+Lake Formation access-control proof — one governed Iceberg table, three roles assumed via STS.
+
+[1] analyst-role  (LF-Tag: classification IN public,internal)
+    SELECT source_department, supplier_name, amount_gbp, processing_status ...
+    -> SUCCEEDED  (permitted columns return normally)
+
+[2] analyst-role  selecting the RESTRICTED column 'approver'
+    SELECT transaction_id, approver, risk_rating ...
+    -> FAILED: ACCESS DENIED   <-- LF-Tag COLUMN governance (ABAC) in action
+
+[3] assurance-role  (LF-Tag: classification IN public,internal,restricted)
+    SELECT transaction_id, approver, budget_owner, risk_rating, internal_notes ...
+    -> SUCCEEDED  (sees the restricted columns, all rows)
+
+[4] region-analyst-role  (Lake Formation DATA FILTER, no LF-Tag grant)
+    SELECT source_department, count(*), sum(amount_gbp) GROUP BY source_department
+    -> SUCCEEDED, returns ONLY:   mod | 430 rows | total 177,538,253.74
+       (cabinet_office and dhsc rows are filtered out)  <-- ROW/cell security
+
+Column governance (LF-Tags) and row security (data filter) are on SEPARATE principals:
+a tag grant unions with a filter grant and would widen access, defeating the filter.

@@ -1,0 +1,11 @@
+# Iceberg tables in the Glue Data Catalog
+--------------------------------------------------
+|                    GetTables                   |
++--------+---------------------------+-----------+
+| Format |           Table           |   Type    |
++--------+---------------------------+-----------+
+|  None  |  curated_open_analytics   |  ICEBERG  |
+|  None  |  gold_department_metrics  |  ICEBERG  |
+|  None  |  rejected_records         |  ICEBERG  |
+|  None  |  silver_clean_spend       |  ICEBERG  |
++--------+---------------------------+-----------+

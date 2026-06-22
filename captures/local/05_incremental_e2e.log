@@ -1,0 +1,29 @@
+===== BEFORE: state of silver after the two initial runs =====
+SILVER_ROWS=1550
+DISTINCT_TXID=1550
+NO_DUPLICATES=True
+PROBE_CO-2026-04-0000=[Row(transaction_id='CO-2026-04-0000', amount_gbp=92003.57, payment_month='2026-04')]
+LATE_ROWS_PRESENT=0
+
+===== Dropping a LATE file into an already-processed dept/month (cabinet_office / April) =====
+    5 brand-new unique ids (CO-LATE-0001..0005) + 1 EXISTING id (CO-2026-04-0000) with a corrected amount 999999.99
+    wrote data/raw/cabinet_office_spend_2026_04_late.csv (6 rows)
+
+===== RERUN pipeline (only the new file should be processed) =====
+[idempotency] skip already processed: cabinet_office_spend_2026_04.csv
+[ok] cabinet_office_spend_2026_04_late.csv      valid=   6  quarantined=0
+[idempotency] skip already processed: cabinet_office_spend_2026_05.csv
+[idempotency] skip already processed: cabinet_office_spend_2026_05_schemadrift.csv
+[idempotency] skip already processed: dhsc_spend_2026_04.csv
+[idempotency] skip already processed: dhsc_spend_2026_05.csv
+[idempotency] skip already processed: mod_spend_2026_04.csv
+[idempotency] skip already processed: mod_spend_2026_05_malformed.csv
+
+===== AFTER: silver state =====
+SILVER_ROWS=1555
+DISTINCT_TXID=1555
+NO_DUPLICATES=True
+PROBE_CO-2026-04-0000=[Row(transaction_id='CO-2026-04-0000', amount_gbp=999999.99, payment_month='2026-04')]
+LATE_ROWS_PRESENT=5
+
+EXPECTED: rows = 1550 + 5 new = 1555; NO_DUPLICATES=True; CO-2026-04-0000 amount now 999999.99 (corrected, not duplicated); LATE_ROWS_PRESENT=5
