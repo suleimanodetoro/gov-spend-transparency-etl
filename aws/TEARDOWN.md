@@ -69,5 +69,5 @@ console under Administration → Data lake settings.
 aws s3 ls | grep govspend || echo "no govspend buckets — OK"
 aws glue get-databases --query 'DatabaseList[].Name' --region eu-west-2
 aws athena list-work-groups --region eu-west-2 --query 'WorkGroups[].Name'
-aws budgets describe-budgets --account-id 556524450848 --query 'Budgets[].BudgetName' 2>/dev/null || true
+aws budgets describe-budgets --account-id "$(aws sts get-caller-identity --query Account --output text)" --query 'Budgets[].BudgetName' 2>/dev/null || true
 ```

@@ -54,9 +54,9 @@ variable "budget_currency" {
 }
 
 variable "budget_notification_email" {
-  description = "Email that receives budget alerts."
+  description = "Email that receives budget alerts. Set to your own address."
   type        = string
-  default     = "odetoro75@gmail.com"
+  default     = "alerts@example.com"
 }
 
 variable "athena_results_expiry_days" {
@@ -77,9 +77,8 @@ variable "enable_table_governance" {
 }
 
 variable "operator_user_name" {
-  description = "Existing IAM user that runs Terraform and assumes the demo roles."
+  description = "Existing IAM user (in your account) that runs Terraform and assumes the demo roles. No default — supply via TF_VAR_operator_user_name (see aws/RUNBOOK.md)."
   type        = string
-  default     = "aws-sda-user"
 }
 
 variable "manage_operator_assume_policy" {

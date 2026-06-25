@@ -1,6 +1,6 @@
 WARNING: Using incubator modules: jdk.incubator.vector
 Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
-26/06/21 19:30:33 WARN Utils: Your hostname, Suleimans-MacBook-Pro.local, resolves to a loopback address: 127.0.0.1; using 192.168.0.158 instead (on interface en0)
+26/06/21 19:30:33 WARN Utils: Your hostname, host.local, resolves to a loopback address: 127.0.0.1; using <local-ip> instead (on interface en0)
 26/06/21 19:30:33 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
 Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
 Setting default log level to "WARN".
@@ -31,9 +31,9 @@ To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLeve
 +-------------------------------------------------------------------------------------------------------------------------+--------------+----------+-----------+------------------------------------+
 |source_file                                                                                                              |transaction_id|raw_amount|raw_date   |rejection_reason                    |
 +-------------------------------------------------------------------------------------------------------------------------+--------------+----------+-----------+------------------------------------+
-|file:///Users/suleimanodetoro/Desktop/BecomingHirable/gov-spend-transparency-etl/data/raw/mod_spend_2026_05_malformed.csv|MOD-bad-1     |INVALID   |31/02/2026 |invalid_payment_date; invalid_amount|
-|file:///Users/suleimanodetoro/Desktop/BecomingHirable/gov-spend-transparency-etl/data/raw/mod_spend_2026_05_malformed.csv|NULL          |1,000.00  |16-Apr-2026|missing_transaction_id              |
-|file:///Users/suleimanodetoro/Desktop/BecomingHirable/gov-spend-transparency-etl/data/raw/mod_spend_2026_05_malformed.csv|MOD-bad-3     |55,000.00 |14-Apr-2026|missing_supplier                    |
+|file:///path/to/gov-spend-transparency-etl/data/raw/mod_spend_2026_05_malformed.csv|MOD-bad-1     |INVALID   |31/02/2026 |invalid_payment_date; invalid_amount|
+|file:///path/to/gov-spend-transparency-etl/data/raw/mod_spend_2026_05_malformed.csv|NULL          |1,000.00  |16-Apr-2026|missing_transaction_id              |
+|file:///path/to/gov-spend-transparency-etl/data/raw/mod_spend_2026_05_malformed.csv|MOD-bad-3     |55,000.00 |14-Apr-2026|missing_supplier                    |
 +-------------------------------------------------------------------------------------------------------------------------+--------------+----------+-----------+------------------------------------+
 
 === ABAC: open analytics layer columns (restricted removed) ===

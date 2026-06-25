@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 # Collect AWS-lane proof artefacts into captures/aws/ (text captures; this CLI has no GUI).
 # Run after the Glue job SUCCEEDS and stage-2 governance is applied.
-set -uo pipefail
+set -euo pipefail
 REGION="${AWS_REGION:-eu-west-2}"
 JOB="gov-spend-assurance-etl"
 DB="gov_spend_assurance"
-CUR="govspend-curated-556524450848"
+ACCOUNT="$(aws sts get-caller-identity --query Account --output text)"
+CUR="govspend-curated-${ACCOUNT}"
 OUT="$(cd "$(dirname "$0")/.." && pwd)/captures/aws"
 mkdir -p "$OUT"
 
 echo "# Glue job run" | tee "$OUT/glue_job_run.txt"
-RUN_ID="$(cat /tmp/glue_run_id.txt 2>/dev/null)"
+RUN_ID="$(cat /tmp/glue_run_id.txt 2>/dev/null || true)"   # optional; aws call below errors clearly if unset
 aws glue get-job-run --job-name "$JOB" --run-id "$RUN_ID" --region "$REGION" \
   --query 'JobRun.{State:JobRunState,ExecutionSeconds:ExecutionTime,Started:StartedOn,Workers:NumberOfWorkers,GlueVersion:GlueVersion}' \
   --output table | tee -a "$OUT/glue_job_run.txt"
@@ -31,7 +32,7 @@ aws cloudwatch list-metrics --namespace GovSpendETL --region "$REGION" \
 echo "# Glue job summary log line (valid/rejected)" | tee "$OUT/glue_summary_log.txt"
 LG="/aws-glue/jobs/output"
 STREAMS=$(aws logs describe-log-streams --log-group-name "$LG" --region "$REGION" \
-  --order-by LastEventTime --descending --max-items 5 --query 'logStreams[].logStreamName' --output text 2>/dev/null)
+  --order-by LastEventTime --descending --max-items 5 --query 'logStreams[].logStreamName' --output text 2>/dev/null || true)
 for s in $STREAMS; do
   aws logs get-log-events --log-group-name "$LG" --log-stream-name "$s" --region "$REGION" \
     --query 'events[].message' --output text 2>/dev/null | grep -E '\[summary\]|\[ok\]|valid=' && break

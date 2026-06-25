@@ -1,6 +1,6 @@
 WARNING: Using incubator modules: jdk.incubator.vector
 Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
-26/06/21 19:30:51 WARN Utils: Your hostname, Suleimans-MacBook-Pro.local, resolves to a loopback address: 127.0.0.1; using 192.168.0.158 instead (on interface en0)
+26/06/21 19:30:51 WARN Utils: Your hostname, host.local, resolves to a loopback address: 127.0.0.1; using <local-ip> instead (on interface en0)
 26/06/21 19:30:51 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
 Using Spark's default log4j profile: org/apache/spark/log4j2-defaults.properties
 Setting default log level to "WARN".

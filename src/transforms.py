@@ -17,7 +17,9 @@ DEPT_GROUP = {"cabinet_office": "Cabinet Office", "mod": "Defence", "dhsc": "Hea
 
 def parse_amount(colname):
     """'£1,234.56' / '1,250' / '(500.00)' -> double. '(...)' is a credit (negative).
-    try_cast tolerates junk like 'INVALID' by returning NULL instead of failing."""
+    try_cast tolerates junk like 'INVALID' by returning NULL instead of failing.
+    Assumes a UK/GBP locale (comma = thousands separator, dot = decimal); these are HMG
+    transparency CSVs, so a European '1.234,56' is out of scope and would quarantine as NULL."""
     return F.expr(
         "try_cast(regexp_replace(trim(`{c}`), '[^0-9.-]', '') as double) "
         "* (case when trim(`{c}`) like '(%)' then -1 else 1 end)".format(c=colname)
@@ -76,6 +78,8 @@ def clean(df: DataFrame) -> DataFrame:
         .withColumn("payment_date", parse_date("payment_date"))
         .withColumn("payment_month", F.date_format(parse_date("payment_date_raw"), "yyyy-MM"))
         .withColumn("supplier_name", F.initcap(F.trim(F.col("supplier_name"))))
+        # needs_review flags credits (negative amount_gbp) for assurance review. By design this
+        # keys on the transaction amount only; a negative VAT alone does not set it.
         .withColumn("needs_review", F.coalesce(F.col("amount_gbp") < 0, F.lit(False)))
         .withColumn("ingested_at", F.current_timestamp())
         .drop("amount", "vat_amount"))
@@ -99,8 +103,14 @@ def enrich(spark: SparkSession, df: DataFrame) -> DataFrame:
 
 
 def dedup(df: DataFrame) -> DataFrame:
+    """Keep one row per natural key (transaction_id, falling back to record_hash). Latest
+    ingested_at wins; ties are broken deterministically by record_hash so the survivor is
+    reproducible. This matters because within a single batch ingested_at is one constant
+    current_timestamp() value — without the secondary key, a same-key collision in one batch
+    would keep an arbitrary row. 'Latest wins' is therefore exact across runs and stable within
+    one."""
     key = F.coalesce(F.col("transaction_id"), F.col("record_hash"))
-    w = Window.partitionBy(key).orderBy(F.col("ingested_at").desc())
+    w = Window.partitionBy(key).orderBy(F.col("ingested_at").desc(), F.col("record_hash").desc())
     return df.withColumn("_rn", F.row_number().over(w)).filter(F.col("_rn") == 1).drop("_rn")
 
 

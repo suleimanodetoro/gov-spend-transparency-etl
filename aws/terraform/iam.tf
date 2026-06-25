@@ -112,7 +112,7 @@ resource "aws_iam_role_policy" "glue" {
 }
 
 # ------------------------------------------------------- consumer roles ----- #
-# Trust: only aws-sda-user (the operator) may assume these, to run the proof queries.
+# Trust: only the operator IAM user (var.operator_user_name) may assume these, to run the proof queries.
 data "aws_iam_policy_document" "consumer_assume" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -220,7 +220,7 @@ resource "aws_iam_role_policy" "region_analyst" {
   policy = data.aws_iam_policy_document.consumer_cell_level.json
 }
 
-# Let the operator (aws-sda-user) assume the three demo roles. Additive inline policy on the
+# Let the operator (var.operator_user_name) assume the three demo roles. Additive inline policy on the
 # existing user; removed on destroy. Toggle off if the user is managed elsewhere.
 resource "aws_iam_user_policy" "operator_assume" {
   count = var.manage_operator_assume_policy ? 1 : 0

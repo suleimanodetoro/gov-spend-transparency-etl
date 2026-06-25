@@ -4,14 +4,17 @@ Deploys the governed Iceberg lakehouse and proves Lake Formation access control.
 step is called out. Region is **eu-west-2** throughout.
 
 > **Sandbox-account warning.** `aws_lakeformation_data_lake_settings` is **account-wide and
-> authoritative** — applying it sets the Lake Formation admins to `aws-sda-user` and clears the
+> authoritative** — applying it sets the Lake Formation admins to your operator user
+> (`var.operator_user_name`) and clears the
 > `IAMAllowedPrincipals` default so LF actually enforces on new tables. If this account uses Lake
 > Formation for anything else, that will be overwritten. Only run this in a sandbox account.
 
 ## Prerequisites
 ```bash
 export AWS_REGION=eu-west-2 AWS_DEFAULT_REGION=eu-west-2
-aws sts get-caller-identity                 # expect account 556524450848, user aws-sda-user
+aws sts get-caller-identity                 # note YOUR account id and IAM user
+# Terraform needs the operator IAM user (no default); derive it from the caller ARN:
+export TF_VAR_operator_user_name="$(aws sts get-caller-identity --query Arn --output text | cut -d/ -f2)"
 cd <repo>
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 ./.venv/bin/python generate_sample_data.py  # data/ must exist; Terraform uploads it
@@ -92,7 +95,7 @@ skipped and corrections update in place. The other tables are fully re-derived e
 
 ## Known footguns (from the doc research, so first apply is calm)
 - LF `data_lake_settings` is authoritative — manage all its settings in this one resource.
-- Do not grant LF permissions to an admin principal (we don't; admin = aws-sda-user, grantees =
+- Do not grant LF permissions to an admin principal (we don't; admin = the operator user, grantees =
   the 4 non-admin roles).
 - A tag grant + a data-filter grant on ONE principal UNION and defeat the filter — kept separate.
 - Athena `SELECT *` silently drops ungranted columns; the denied proof must NAME a restricted column.

@@ -28,9 +28,10 @@ SILVER_COLS = ["record_hash", "transaction_id", "source_department", "department
                "vat_amount_gbp", "expense_category", "needs_review", "raw_extras",
                "schema_version", "source_file", "ingested_at"]
 
-# Columns classified "restricted": present in the governed assurance layer, removed from
-# the open analytics layer. In production these are governed by Lake Formation LF-Tags.
-RESTRICTED = ["approver", "budget_owner", "internal_notes", "risk_rating", "due_diligence_notes"]
+# Columns classified "restricted" are loaded from config/data_classification.json in main() —
+# the SAME file that becomes the Lake Formation LF-Tags in production — so the open-layer split
+# and the column governance share ONE source of truth (identical to the Glue lane). A second
+# hand-maintained list here could silently drift from the classification config.
 
 
 # ----------------------------- audit / manifest ----------------------------- #
@@ -107,7 +108,7 @@ def main():
     out = os.path.join(base, "output")
     paths = {"bronze": f"{out}/bronze_raw", "silver": f"{out}/silver_clean_spend",
              "open": f"{out}/curated_open_analytics",
-             "gold": f"{out}/gold_department_monthly_metrics", "rejected": f"{out}/rejected_records",
+             "gold": f"{out}/gold_department_metrics", "rejected": f"{out}/rejected_records",
              "manifest": f"{out}/audit/processed_files_manifest.csv",
              "summary": f"{out}/audit/run_summary.json"}
 
@@ -116,11 +117,26 @@ def main():
     cfg = json.load(open(os.path.join(base, "config", "column_mappings.json")))
     version, mappings = cfg["schema_version"], cfg["sources"]
 
+    # Restricted columns derived from the classification config (single source of truth, same as
+    # the Glue lane), not a hand-maintained list — so a newly classified column cannot leak into
+    # the open analytics layer locally while staying governed in production.
+    classification = json.load(open(os.path.join(base, "config", "data_classification.json")))
+    restricted = [c for c, level in classification["columns"].items() if level == "restricted"]
+
     seen = load_manifest(paths["manifest"])
     files = sorted(glob.glob(os.path.join(base, "data", "raw", "*.csv")))
     if not files:
         print("No files in ./data/raw. Run: python generate_sample_data.py")
-        return
+        spark.stop(); return
+
+    # Reference data is required for the assurance join. Check it up front so a missing file fails
+    # fast with a clear message, instead of aborting after bronze/rejected are already written.
+    ref = os.path.join(base, "data", "reference")
+    missing_ref = [f for f in ("approvals_ledger.csv", "supplier_reference.csv")
+                   if not os.path.exists(os.path.join(ref, f))]
+    if missing_ref:
+        print(f"[error] missing reference data {missing_ref} in {ref}. Run: python generate_sample_data.py")
+        spark.stop(); return
 
     norm_frames, silver_frames, rejected_frames, summary, manifest_rows = [], [], [], [], []
     for fp in files:
@@ -133,6 +149,7 @@ def main():
             print(f"[error] no mapping for source '{key}' ({os.path.basename(fp)}); parked")
             continue
 
+        sname = os.path.splitext(os.path.basename(fp))[0]
         norm = T.normalise(T.read_raw(spark, fp), mappings[key], key, version)
         enriched = T.enrich(spark, T.add_record_hash(T.clean(norm)))
         valid, rejected = Q.split_valid_quarantine(enriched)
@@ -140,8 +157,11 @@ def main():
 
         valid = valid.cache()
         nv, nr = valid.count(), rejected.count()
-        norm_frames.append(norm); silver_frames.append(valid.select(*SILVER_COLS))
-        rejected_frames.append(rejected)
+        # Tag bronze/rejected with the source file so each file owns its own partition (see the
+        # idempotent write below). Silver is unaffected — it is projected to SILVER_COLS.
+        norm_frames.append(norm.withColumn("source_name", F.lit(sname)))
+        silver_frames.append(valid.select(*SILVER_COLS))
+        rejected_frames.append(rejected.withColumn("source_name", F.lit(sname)))
         summary.append({"file": os.path.basename(fp), "department": key, "valid": nv, "rejected": nr})
         manifest_rows.append([os.path.basename(fp), h, nv, nr, datetime.now(timezone.utc).isoformat()])
         print(f"[ok] {os.path.basename(fp):42s} valid={nv:4d}  quarantined={nr}")
@@ -154,13 +174,18 @@ def main():
 
     base_silver = T.dedup(reduce(lambda a, b: a.unionByName(b, allowMissingColumns=True), silver_frames))
 
+    # Bronze (raw landing) and rejected (quarantine) accumulate across runs, but are written with
+    # DYNAMIC partition overwrite keyed on (source_department, source_name) so each source file
+    # owns its own partition. A new file lands in a fresh partition (never clobbering a
+    # department's earlier months), and REPROCESSING a file overwrites only its own partition — so
+    # a crash-then-rerun is idempotent, not double-appended. Local stand-in for Iceberg's
+    # transactional commit; production gets exactly-once from the catalog itself.
     reduce(lambda a, b: a.unionByName(b, allowMissingColumns=True), norm_frames) \
-        .write.mode("overwrite").partitionBy("source_department").parquet(paths["bronze"])
+        .write.mode("overwrite").partitionBy("source_department", "source_name").parquet(paths["bronze"])
     reduce(lambda a, b: a.unionByName(b, allowMissingColumns=True), rejected_frames) \
-        .write.mode("append").parquet(paths["rejected"])
+        .write.mode("overwrite").partitionBy("source_department", "source_name").parquet(paths["rejected"])
 
-    # Hybrid: attach the internal approvals ledger and supplier risk reference.
-    ref = os.path.join(base, "data", "reference")
+    # Hybrid: attach the internal approvals ledger and supplier risk reference (ref checked above).
     approvals = spark.read.option("header", True).csv(f"{ref}/approvals_ledger.csv").dropDuplicates(["transaction_id"])
     suppliers = (spark.read.option("header", True).csv(f"{ref}/supplier_reference.csv")
                  .withColumn("supplier_name", F.initcap(F.trim(F.col("supplier_name")))))
@@ -172,7 +197,7 @@ def main():
 
     # open and gold are fully re-derived from the merged silver each run.
     final_silver = spark.read.parquet(paths["silver"])
-    T.open_layer(final_silver, RESTRICTED) \
+    T.open_layer(final_silver, restricted) \
         .write.mode("overwrite").partitionBy("source_department", "payment_month").parquet(paths["open"])
     aggregate_gold(spark.read.parquet(paths["open"])).write.mode("overwrite").parquet(paths["gold"])
 
@@ -193,7 +218,7 @@ def main():
     print("=== ABAC: open analytics layer columns (restricted removed) ===")
     print(sorted(spark.read.parquet(paths["open"]).columns))
     print("=== ABAC: restricted columns live only in the assurance layer ===")
-    print(sorted(c for c in spark.read.parquet(paths["silver"]).columns if c in RESTRICTED))
+    print(sorted(c for c in spark.read.parquet(paths["silver"]).columns if c in restricted))
     spark.stop()
 
 

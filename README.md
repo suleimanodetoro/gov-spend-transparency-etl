@@ -38,12 +38,13 @@ is the live proof of restart-safety.
 - **curated_open_analytics** — the analytics-safe view, restricted columns removed. In
   production this is the same Iceberg table with restricted columns hidden by Lake Formation
   for untagged principals, not a second physical table.
-- **gold_department_monthly_metrics** — spend, transaction and supplier counts, credits, average.
+- **gold_department_metrics** — monthly spend, transaction and supplier counts, credits, average.
 - **rejected_records** — quarantined rows with a reason.
 - **audit/** — processed-files manifest and a per-run summary.
 
-Classification (`config/data_classification.json`) maps every column to public, internal or
-restricted, which in production becomes the LF-Tag set governing column and row access (ABAC).
+Classification (`config/data_classification.json`) maps each business column to public, internal
+or restricted (lineage columns like `record_hash`, `source_file` and `ingested_at` are
+unclassified), which in production becomes the LF-Tag set governing column and row access (ABAC).
 
 ## What it demonstrates
 
